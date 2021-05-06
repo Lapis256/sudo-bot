@@ -2,6 +2,7 @@ import re
 from asyncio import sleep
 from itertools import product
 from textwrap import dedent
+from typing import Optional
 
 from discord import Role, Forbidden
 from discord.ext.commands import (
@@ -21,7 +22,7 @@ class SudoCog(Cog, name="Main"):
     def __init__(self, bot):
         self.loop = bot.loop
         self.manager = SudoManager()
-        self.sudo_regex = re.compile("su:\s*(.+)")
+        self.sudo_regex = re.compile("sudo:\s*(.+)")
 
     def find_sudo_role(self, guild_roles, member_roles):
         for mrole, grole in product(reversed(member_roles), guild_roles):
@@ -73,11 +74,16 @@ class SudoCog(Cog, name="Main"):
     @has_guild_permissions(manage_roles=True)
     @bot_has_guild_permissions(manage_roles=True)
     @command(ignore_extra=True)
-    async def create(self, ctx, role: Role):
+    async def create(self, ctx, role: Role, extend_role: Optional[Role] = None):
         """指定したロールのsudo用ロールを作るだけのコマンドです。
-        権限は手動で設定する必要があります。"""
+        権限は手動で設定する必要があります。
+        第二引数にロールを指定すると、指定したロールの権限を継承します。"""
 
-        created_role = await ctx.guild.create_role(name="su:" + role.name)
+        options = {"name": "sudo:" + role.name}
+        if extend_role is not None:
+            options["permissions"] = extend_role.permissions
+
+        created_role = await ctx.guild.create_role(**options)
         await ctx.reply(created_role.mention + "を作成しました。\n権限を設定してください。")
 
     @create.error
