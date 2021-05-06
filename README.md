@@ -24,6 +24,8 @@ pip install -r requirements.txt
 ```
 このコマンドで必要なパッケージをインストールします。
 
+``.env.sample`` を参考に ``.env`` ファイルを作成してください。
+
 ```
 python main.py
 ```
